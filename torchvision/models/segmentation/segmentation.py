@@ -78,7 +78,7 @@ def _segm_model(name, backbone_name, num_classes, aux, pretrained_backbone=True,
 
 
 def _load_model(arch_type, backbone, pretrained, progress, num_classes, aux_loss, **kwargs):
-    print(f'torchvision.models.segmentation.fcn_{backbone}()')
+    print(f'torchvision.models.segmentation.{arch_type}_{backbone}()')
     if pretrained:
         aux_loss = True
         kwargs["pretrained_backbone"] = False
