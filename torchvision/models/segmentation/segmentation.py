@@ -6,12 +6,14 @@ from .deeplabv3 import DeepLabHead, DeepLabV3
 from .fcn import FCN, FCNHead
 from .lraspp import LRASPP
 
-
-__all__ = ['fcn_resnet50', 'fcn_resnet101', 'deeplabv3_resnet50', 'deeplabv3_resnet101',
+#FCN_Resnet18 and FCN_Resnet34 added from https://github.com/dusty-nv/vision/tree/v0.3.0
+__all__ = ['fcn_resnet18', 'fcn_resnet34', 'fcn_resnet50', 'fcn_resnet101', 'deeplabv3_resnet50', 'deeplabv3_resnet101',
            'deeplabv3_mobilenet_v3_large', 'lraspp_mobilenet_v3_large']
 
-
+#FCN_Resnet18 and FCN_Resnet34 added from https://github.com/dusty-nv/vision/tree/v0.3.0
 model_urls = {
+    'fcn_resnet18_coco': None,
+    'fcn_resnet34_coco': None,
     'fcn_resnet50_coco': 'https://download.pytorch.org/models/fcn_resnet50_coco-1167a1af.pth',
     'fcn_resnet101_coco': 'https://download.pytorch.org/models/fcn_resnet101_coco-7ecb50ca.pth',
     'deeplabv3_resnet50_coco': 'https://download.pytorch.org/models/deeplabv3_resnet50_coco-cd0a2569.pth',
@@ -22,8 +24,17 @@ model_urls = {
 }
 
 
-def _segm_model(name, backbone_name, num_classes, aux, pretrained_backbone=True):
-    if 'resnet' in backbone_name:
+def _segm_model(name, backbone_name, num_classes, aux, pretrained_backbone=True, export_onnx=False):
+    #FCN_Resnet18 and FCN_Resnet34 added from https://github.com/dusty-nv/vision/tree/v0.3.0 modified slightly for usage in this repo
+    if backbone_name == "resnet18" or backbone_name == "resnet34":
+        backbone = resnet.__dict__[backbone_name](
+            pretrained=pretrained_ backbone,
+            replace_stride_with_dilation=[False, False, False])
+        out_layer = 'layer4'
+        out_inplanes = 512
+        aux_layer = 'layer3'
+        aux_inplanes = 256
+    elif 'resnet' in backbone_name:
         backbone = resnet.__dict__[backbone_name](
             pretrained=pretrained_backbone,
             replace_stride_with_dilation=[False, True, True])
@@ -62,11 +73,12 @@ def _segm_model(name, backbone_name, num_classes, aux, pretrained_backbone=True)
     classifier = model_map[name][0](out_inplanes, num_classes)
     base_model = model_map[name][1]
 
-    model = base_model(backbone, classifier, aux_classifier)
+    model = base_model(backbone, classifier, aux_classifier, export_onnx)
     return model
 
 
 def _load_model(arch_type, backbone, pretrained, progress, num_classes, aux_loss, **kwargs):
+    print(f'torchvision.models.segmentation.fcn_{backbone}()')
     if pretrained:
         aux_loss = True
         kwargs["pretrained_backbone"] = False
@@ -101,6 +113,28 @@ def _segm_lraspp_mobilenetv3(backbone_name, num_classes, pretrained_backbone=Tru
 
     model = LRASPP(backbone, low_channels, high_channels, num_classes)
     return model
+
+#FCN_Resnet18 and FCN_Resnet34 added from https://github.com/dusty-nv/vision/tree/v0.3.0
+def fcn_resnet18(pretrained=False, progress=True,
+                 num_classes=21, aux_loss=None, **kwargs):
+    """Constructs a Fully-Convolutional Network model with a ResNet-18 backbone.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on COCO train2017 which
+            contains the same classes as Pascal VOC
+        progress (bool): If True, displays a progress bar of the download to stderr
+    """
+    return _load_model('fcn', 'resnet18', pretrained, progress, num_classes, aux_loss, **kwargs)
+
+#FCN_Resnet18 and FCN_Resnet34 added from https://github.com/dusty-nv/vision/tree/v0.3.0
+def fcn_resnet34(pretrained=False, progress=True,
+                 num_classes=21, aux_loss=None, **kwargs):
+    """Constructs a Fully-Convolutional Network model with a ResNet-34 backbone.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on COCO train2017 which
+            contains the same classes as Pascal VOC
+        progress (bool): If True, displays a progress bar of the download to stderr
+    """
+    return _load_model('fcn', 'resnet34', pretrained, progress, num_classes, aux_loss, **kwargs)
 
 
 def fcn_resnet50(pretrained=False, progress=True,
