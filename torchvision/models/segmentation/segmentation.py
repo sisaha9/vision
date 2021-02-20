@@ -28,7 +28,7 @@ def _segm_model(name, backbone_name, num_classes, aux, pretrained_backbone=True,
     #FCN_Resnet18 and FCN_Resnet34 added from https://github.com/dusty-nv/vision/tree/v0.3.0 modified slightly for usage in this repo
     if backbone_name == "resnet18" or backbone_name == "resnet34":
         backbone = resnet.__dict__[backbone_name](
-            pretrained=pretrained_ backbone,
+            pretrained=pretrained_backbone,
             replace_stride_with_dilation=[False, False, False])
         out_layer = 'layer4'
         out_inplanes = 512
